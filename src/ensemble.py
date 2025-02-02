@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from models import initialize_model  
 from transforms import get_val_transform  
-from config import DROPOUT, BATCH_SIZE
+from config import DROPOUT, BATCH_SIZE, IMG_SIZE
 
 # 📌 Define device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -52,7 +52,7 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
     models = load_models(model_paths, device)
 
     # ✅ Keep using validation transform
-    test_transform = get_val_transform()  
+    test_transform = get_val_transform(IMG_SIZE)  
 
     # 📌 Load dataset
     test_dataset = datasets.ImageFolder(test_dir, transform=test_transform)
