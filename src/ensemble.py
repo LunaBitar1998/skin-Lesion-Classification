@@ -21,14 +21,8 @@ model_paths = [
 def load_models(model_paths, device):
     models = []
     for model_path in model_paths:
-        if "efficientnet_b4" in model_path:
-            model_name = "efficientnet_b4"
-        elif "densenet_121" in model_path:
-            model_name = "densenet_121"
-        elif "convnext_tiny" in model_path:
-            model_name = "convnext_tiny"
-        else:
-            raise ValueError(f"Unknown model in {model_path}")
+        # ✅ Extract model name dynamically
+        model_name = os.path.basename(model_path).replace("_best.pth", "")
 
         # ✅ Initialize model correctly with config dropout
         model = initialize_model(model_name, DROPOUT)  
@@ -74,6 +68,7 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
                 predictions.append(probs.cpu().numpy())
 
             # 📌 Apply ensemble method
+            predictions = np.array(predictions)  # Convert list to numpy array
             if method == "majority":
                 final_preds = np.round(np.mean(predictions, axis=0))  
             elif method == "average":
@@ -83,7 +78,7 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
             else:
                 raise ValueError("Unknown ensemble method")
 
-            all_predictions.extend(final_preds)
+            all_predictions.extend(final_preds.flatten())  # Flatten to match targets
 
     # 📌 Compute accuracy
     accuracy = np.mean(np.array(all_predictions) == np.array(all_targets))
@@ -94,4 +89,3 @@ if __name__ == "__main__":
     test_dir = "/kaggle/input/skinlesionbinary/val/val"  # ✅ Correct test dataset path
     ensemble_method = "majority"  # Change to "average" or "max_prob" if needed
     ensemble_predict(model_paths, test_dir, method=ensemble_method)
-
