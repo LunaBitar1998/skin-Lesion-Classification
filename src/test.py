@@ -14,10 +14,10 @@ def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
     
     # Load the model
     model = initialize_model(model_name, dropout)
-    model.load_state_dict(torch.load(f"/kaggle/working/{model_name}_final.pth", map_location=device))
+    model.load_state_dict(torch.load(f"/kaggle/working/Skin-Lesion-Classification/{model_name}_best.pth", map_location=device))
     model.to(device)
     model.eval()
-    
+
 
     # Prepare test dataset
     test_transform = get_val_transform(config.IMG_SIZE)
