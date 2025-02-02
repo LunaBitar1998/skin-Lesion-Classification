@@ -70,11 +70,18 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
             # 📌 Apply ensemble method
             predictions = np.array(predictions)  # Convert list to numpy array
             if method == "majority":
-                final_preds = np.round(np.mean(predictions, axis=0))  
+                # Majority Voting (Hard Voting) - Count votes for 0 vs 1
+                votes = np.round(predictions)  # Convert probabilities to hard labels (0 or 1)
+                final_preds = np.where(np.sum(votes, axis=0) > len(models) / 2, 1, 0)  # Take majority
+            
             elif method == "average":
-                final_preds = np.mean(predictions, axis=0)  
+                # Averaging (Soft Voting) - Average probabilities, then round to 0 or 1
+                final_preds = np.round(np.mean(predictions, axis=0))  
+            
             elif method == "max_prob":
-                final_preds = np.argmax(np.sum(predictions, axis=0), axis=1)  
+                # Max Probability - Pick the highest probability among models for each sample
+                final_preds = np.where(np.max(predictions, axis=0) > 0.5, 1, 0)  # Take highest probability decision
+            
             else:
                 raise ValueError("Unknown ensemble method")
 
