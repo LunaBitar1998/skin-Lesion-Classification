@@ -87,5 +87,5 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
 # 📌 Run ensemble
 if __name__ == "__main__":
     test_dir = "/kaggle/input/skinlesionbinary/val/val"  # ✅ Correct test dataset path
-    ensemble_method = "majority"  # Change to "average" or "max_prob" if needed
+    ensemble_method = "average"  # Change to "average" or "max_prob" if needed
     ensemble_predict(model_paths, test_dir, method=ensemble_method)
