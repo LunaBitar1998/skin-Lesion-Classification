@@ -3,22 +3,17 @@ import copy
 import os
 from tqdm import tqdm
 from src.utils import early_stopping, plot_metrics  
-from src.optimizers import get_optimizer, get_loss_function  # ✅ Import optimizer & loss function
 
 def train_model(
-    model, model_name, train_loader, val_loader, optimizer_name="adam",
-    loss_name="bce", scheduler=None, num_epochs=30, patience=5, device="cuda", resume=False
+    model, model_name, train_loader, val_loader, optimizer, criterion, 
+    scheduler=None, num_epochs=30, patience=5, device="cuda", resume=False
 ):
     best_model_path = f"{model_name}_best.pth"
     final_model_path = f"{model_name}_final.pth"
     
     model = model.to(device)
-    optimizer = get_optimizer(model, optimizer_name)  # ✅ Define optimizer
-    criterion = get_loss_function(loss_name)  # ✅ Define loss function
 
     best_val_acc, counter, start_epoch = 0.0, 0, 0
-
-    # Track losses and accuracies
     train_losses, val_losses, train_accuracies, val_accuracies = [], [], [], []
 
     # Resume from the best checkpoint if available
@@ -28,7 +23,7 @@ def train_model(
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         scheduler.load_state_dict(checkpoint["scheduler_state_dict"]) if scheduler else None
         best_val_acc = checkpoint["best_val_acc"]
-        start_epoch = checkpoint["epoch"] + 1  # Resume from the next epoch
+        start_epoch = checkpoint["epoch"] + 1
         counter = checkpoint["counter"]
         print(f"Resuming training from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
 
@@ -81,7 +76,6 @@ def train_model(
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
-        # 🔹 Save the best model with optimizer & scheduler states
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             best_model_wts = copy.deepcopy(model.state_dict())
@@ -105,10 +99,8 @@ def train_model(
     torch.save(model.state_dict(), final_model_path)
     print(f"Training complete. Final best model saved to {final_model_path}")
 
-    # 🔹 Plot training metrics
     metrics_path = f"{model_name}_metrics.png"
     plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, metrics_path)
     print(f"Training metrics saved to {metrics_path}")
 
     return model
-
