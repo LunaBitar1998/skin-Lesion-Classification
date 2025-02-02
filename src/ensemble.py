@@ -56,7 +56,7 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
 
     # 📌 Load dataset
     test_dataset = datasets.ImageFolder(test_dir, transform=test_transform)
-    test_loader = DataLoader(test_dataset, batch_size=config.BATCHSIZE, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
 
     all_predictions = []
     all_targets = []
