@@ -4,7 +4,7 @@ from src.config import (
     WEIGHT_DECAY, OPTIMIZER_NAME, LOSS_NAME, PATIENCE, DEVICE, SAVE_PATH, METRICS_PATH
 )
 from src.transforms import get_train_transform, get_val_transform
-from src.data_loader import get_data_loaders
+from src.data_loader import prepare_data
 from src.models import initialize_model
 from src.optimizers import get_optimizer, get_loss_function
 from src.training import train_model
