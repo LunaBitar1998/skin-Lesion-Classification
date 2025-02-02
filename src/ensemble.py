@@ -1,9 +1,9 @@
 import torch
 from torchvision import datasets
 from torch.utils.data import DataLoader
-from src.transforms import get_val_transform
-from src.models import initialize_model
-import src.config as config
+from transforms import get_val_transform
+from models import initialize_model
+import config as config
 
 def ensemble_predict(
     model_paths, test_dir, method="majority", batch_size=32, device="cuda"
