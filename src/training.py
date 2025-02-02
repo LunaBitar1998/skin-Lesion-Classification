@@ -3,7 +3,7 @@ import copy
 import os
 from tqdm import tqdm
 from src.utils import early_stopping, plot_metrics  
-from IPython.display import FileLink  # ✅ Added for generating download links
+from IPython.display import display, FileLink  # ✅ Added for generating download links
 
 def train_model(
     model, model_name, train_loader, val_loader, optimizer, criterion, 
@@ -77,24 +77,25 @@ def train_model(
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        # 🔹 Call early stopping FIRST, before updating best_val_acc
+        best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience, mode="max")
+
+        if val_acc > best_val_acc:  # ✅ Only update AFTER early stopping check
             best_model_wts = copy.deepcopy(model.state_dict())
             checkpoint = {
                 "epoch": epoch,
                 "model_state_dict": best_model_wts,
                 "optimizer_state_dict": optimizer.state_dict(),
                 "scheduler_state_dict": scheduler.state_dict() if scheduler else None,
-                "best_val_acc": best_val_acc,
+                "best_val_acc": best_val_acc,  # ✅ Now updates after early stopping check
                 "counter": counter
             }
             torch.save(checkpoint, best_model_path)
             print(f"Best model updated! Saved to {best_model_path}")
 
-        best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience)
         if stop_training:
             print("Early stopping triggered!")
-            break
+            break  # ✅ Now breaks at the right time
 
     model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), final_model_path)
@@ -110,3 +111,4 @@ def train_model(
     display(FileLink(final_model_path))  # Generate a clickable download link
 
     return model
+
