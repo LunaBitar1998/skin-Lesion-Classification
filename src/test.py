@@ -1,3 +1,12 @@
+import torch
+from torchvision import datasets
+from torch.utils.data import DataLoader
+from transforms import get_val_transform
+from models import initialize_model
+import config
+import sys
+import os
+
 def evaluate_model(model_name, dropout, test_dir, batch_size=32, device="cuda"):
     """Evaluate a trained model on a separate test set."""
     
@@ -36,8 +45,10 @@ def evaluate_model(model_name, dropout, test_dir, batch_size=32, device="cuda"):
 
     return all_preds, all_labels, accuracy
 
-
 if __name__ == "__main__":
-    test_dir = "/kaggle/input/skinlesionbinary/val/val"  #here you should put your test set path 
-    evaluate_model(config.MODEL_NAME, config.DROPOUT, test_dir=test_dir)
-
+    test_dir = "/kaggle/input/skinlesionbinary/val/val"  # Specify your test dataset path
+    evaluate_model(
+        model_name=config.MODEL_NAME,
+        dropout=config.DROPOUT,
+        test_dir=test_dir
+    )
