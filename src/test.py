@@ -18,14 +18,15 @@ import os
 #from models import initialize_model
 #import config
 
-def evaluate_model(model_name, test_dir, batch_size=32, device="cuda"):
+def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
     """Evaluate a trained model on a separate test set."""
     
     # Load the model
-    model, _ = initialize_model(model_name, config.IMG_SIZE)  # Optimizer not needed here
-    model.load_state_dict(torch.load(f"/kaggle/working/{model_name}_final.pth"))
+    model = initialize_model(model_name, dropout)
+    model.load_state_dict(torch.load(f"/kaggle/working/{model_name}_final.pth", map_location=device))
     model.to(device)
     model.eval()
+    
 
     # Prepare test dataset
     test_transform = get_val_transform(config.IMG_SIZE)
