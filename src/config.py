@@ -14,7 +14,7 @@ WEIGHT_DECAY = 1e-4              # Weight decay for regularization
 OPTIMIZER_NAME = "adam"          # Optimizer: "adam", "sgd"
 LOSS_NAME = "bce"                # Loss function: "bce", "cross_entropy"
 PATIENCE = 5                     # Patience for early stopping
-
+DROPOUT= 0.5
 # Device
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
