@@ -1,23 +1,35 @@
 import torch
 import copy
+import os
 from tqdm import tqdm
 from src.early_stopping import early_stopping  
 
 def train_model(
     model, model_name, train_loader, val_loader, criterion, optimizer, 
-    scheduler=None, num_epochs=30, patience=5, device="cuda"
+    scheduler=None, num_epochs=30, patience=5, device="cuda", resume=False
 ):
+    best_model_path = f"{model_name}_best.pth"
+    final_model_path = f"{model_name}_final.pth"
+    
     model = model.to(device)
+    best_val_acc, counter, start_epoch = 0.0, 0, 0
+
+    # 🔹 Resume from the best checkpoint if available
+    if resume and os.path.exists(best_model_path):
+        checkpoint = torch.load(best_model_path)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        scheduler.load_state_dict(checkpoint["scheduler_state_dict"]) if scheduler else None
+        best_val_acc = checkpoint["best_val_acc"]
+        start_epoch = checkpoint["epoch"] + 1  # Resume from the next epoch
+        counter = checkpoint["counter"]
+        print(f"Resuming training from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
+
     best_model_wts = copy.deepcopy(model.state_dict())
-    best_val_acc, counter = 0.0, 0
 
-    best_model_path = f"{model_name}_best.pth"  # Save best model using model name
-    final_model_path = f"{model_name}_final.pth"  # Save final model
-
-    for epoch in range(num_epochs):
+    for epoch in range(start_epoch, num_epochs):
         print(f"\nEpoch {epoch + 1}/{num_epochs}")
 
-        # Training phase
         model.train()
         train_loss, correct_train, total_train = 0.0, 0, 0
         for inputs, labels in tqdm(train_loader, desc="Training"):
@@ -37,7 +49,6 @@ def train_model(
         train_loss /= total_train
         train_acc = correct_train / total_train
 
-        # Validation phase
         model.eval()
         val_loss, correct_val, total_val = 0.0, 0, 0
         with torch.no_grad():
@@ -59,11 +70,19 @@ def train_model(
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
-        # Save the best model with model-specific name
+        # 🔹 Save the best model with optimizer & scheduler states
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             best_model_wts = copy.deepcopy(model.state_dict())
-            torch.save(best_model_wts, best_model_path)
+            checkpoint = {
+                "epoch": epoch,
+                "model_state_dict": best_model_wts,
+                "optimizer_state_dict": optimizer.state_dict(),
+                "scheduler_state_dict": scheduler.state_dict() if scheduler else None,
+                "best_val_acc": best_val_acc,
+                "counter": counter
+            }
+            torch.save(checkpoint, best_model_path)
             print(f"Best model updated! Saved to {best_model_path}")
 
         best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience)
@@ -71,7 +90,6 @@ def train_model(
             print("Early stopping triggered!")
             break
 
-    # Load best model weights & save final best model
     model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), final_model_path)
     print(f"Training complete. Final best model saved to {final_model_path}")
