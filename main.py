@@ -1,7 +1,7 @@
 import torch
 from src.config import (
     TRAIN_DIR, VAL_DIR, MODEL_NAME, IMG_SIZE, BATCH_SIZE, NUM_EPOCHS, LEARNING_RATE,
-    WEIGHT_DECAY, OPTIMIZER_NAME, LOSS_NAME, PATIENCE, DEVICE, SAVE_PATH, METRICS_PATH
+    WEIGHT_DECAY, OPTIMIZER_NAME, LOSS_NAME, PATIENCE, DEVICE, SAVE_PATH, METRICS_PATH, DROPOUT
 )
 from src.transforms import get_train_transform, get_val_transform
 from src.data_loader import get_data_loaders
@@ -19,7 +19,7 @@ def main():
     )
     
     #  Initialize the model
-    model = initialize_model(MODEL_NAME, IMG_SIZE)
+    model = initialize_model(MODEL_NAME, DROPOUT)
 
     #  Define optimizer and loss function
     optimizer = get_optimizer(model, optimizer_name=OPTIMIZER_NAME, lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
