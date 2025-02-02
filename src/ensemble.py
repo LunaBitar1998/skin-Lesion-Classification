@@ -30,10 +30,12 @@ def ensemble_predict(
     models = []
     for model_path in model_paths:
         model = initialize_model(config.MODEL_NAME, config.DROPOUT)
-        model.load_state_dict(torch.load(model_path, map_location=device))
+        checkpoint = torch.load(model_path, map_location=device)
+        model.load_state_dict(checkpoint["model_state_dict"])
         model.to(device)
         model.eval()
         models.append(model)
+
 
     # Perform ensemble predictions
     all_preds, all_labels = [], []
