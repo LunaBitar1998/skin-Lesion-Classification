@@ -3,6 +3,7 @@ import copy
 import os
 from tqdm import tqdm
 from src.utils import early_stopping, plot_metrics  
+from IPython.display import FileLink  # ✅ Added for generating download links
 
 def train_model(
     model, model_name, train_loader, val_loader, optimizer, criterion, 
@@ -99,8 +100,13 @@ def train_model(
     torch.save(model.state_dict(), final_model_path)
     print(f"Training complete. Final best model saved to {final_model_path}")
 
+    # Plot training metrics
     metrics_path = f"{model_name}_metrics.png"
     plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, metrics_path)
     print(f"Training metrics saved to {metrics_path}")
+
+    # ✅ Add a download link for the final saved model
+    print(f"Generating download link for final model: {final_model_path}")
+    display(FileLink(final_model_path))  # Generate a clickable download link
 
     return model
