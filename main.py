@@ -24,7 +24,7 @@ def main():
     #  Define optimizer and loss function
     optimizer = get_optimizer(model, optimizer_name=OPTIMIZER_NAME, lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     criterion = get_loss_function(loss_name=LOSS_NAME)
-
+    scheduler = ReduceLROnPlateau(optimizer, mode="max", patience=3, factor=0.25)
     #  Train the model
     train_model(
         model=model,
@@ -33,7 +33,7 @@ def main():
         val_loader=val_loader,
         optimizer=optimizer,
         criterion=criterion,
-        scheduler=None,  # Add a scheduler if needed
+        scheduler=scheduler, 
         num_epochs=NUM_EPOCHS,
         patience=PATIENCE,
         device=DEVICE
