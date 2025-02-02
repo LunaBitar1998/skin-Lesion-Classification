@@ -8,7 +8,7 @@ from src.data_loader import get_data_loaders
 from src.models import initialize_model
 from src.optimizers import get_optimizer, get_loss_function
 from src.training import train_model
-
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 def main():
     #  Set up data loaders
     train_loader, val_loader = get_data_loaders(
