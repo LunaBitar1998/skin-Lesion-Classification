@@ -12,11 +12,13 @@ import os
 def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
     """Evaluate a trained model on a separate test set."""
     
-    # Load the model
+    # Load the best model
     model = initialize_model(model_name, dropout)
-    model.load_state_dict(torch.load(f"/kaggle/working/Skin-Lesion-Classification/{model_name}_best.pth", map_location=device))
+    model_path = f"/kaggle/working/Skin-Lesion-Classification/{model_name}_best.pth"  # Use the best model
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
+
 
 
     # Prepare test dataset
