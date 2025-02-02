@@ -1,96 +1,114 @@
 import torch
-from torchvision import datasets
+import torch.nn.functional as F
+import numpy as np
+import os
+from torchvision import transforms
 from torch.utils.data import DataLoader
-from transforms import get_val_transform
-from models import initialize_model
-import config as config
+from dataset import CustomDataset 
+from models import initialize_model  
 
-def ensemble_predict(
-    model_paths, test_dir, method="majority", batch_size=32, device="cuda"
-):
-    """
-    Perform ensemble predictions on the test dataset.
+# 📌 Define device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    Args:
-        model_paths (list): List of paths to the saved model weights.
-        test_dir (str): Path to the test dataset.
-        method (str): Ensemble method ("majority", "average", "highest").
-        batch_size (int): Batch size for DataLoader.
-        device (str): Device to run the models on.
+# 📌 Model paths - Make sure these are correctly trained models!
+model_paths = [
+    "/kaggle/working/Skin-Lesion-Classification/efficientnet_b4_best.pth",
+    "/kaggle/working/Skin-Lesion-Classification/densenet_121_best.pth",
+    "/kaggle/working/Skin-Lesion-Classification/convnext_tiny_best.pth"
+]
 
-    Returns:
-        Tuple: (accuracy, predictions, labels)
-    """
-    # Prepare the test dataset and DataLoader
-    test_transform = get_val_transform(config.IMG_SIZE)
-    test_dataset = datasets.ImageFolder(root=test_dir, transform=test_transform)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
-
-    # Load all models
+# 📌 Load all models correctly
+def load_models(model_paths, device):
     models = []
     for model_path in model_paths:
-        model = initialize_model(config.MODEL_NAME, config.DROPOUT)
+        if "efficientnet_b4" in model_path:
+            model_name = "efficientnet_b4"
+        elif "densenet_121" in model_path:
+            model_name = "densenet_121"
+        elif "convnext_tiny" in model_path:
+            model_name = "convnext_tiny"
+        else:
+            raise ValueError(f"Unknown model in {model_path}")
+
+        # ✅ Initialize model correctly
+        model = initialize_model(model_name, dropout=0.2)  # Adjust dropout if needed
+        
+        # ✅ Load checkpoint correctly
         checkpoint = torch.load(model_path, map_location=device)
-        model.load_state_dict(checkpoint["model_state_dict"])
+        model.load_state_dict(checkpoint["model_state_dict"], strict=False)  # Allow partial match
+
         model.to(device)
         model.eval()
         models.append(model)
 
+    return models
 
-    # Perform ensemble predictions
-    all_preds, all_labels = [], []
-    correct, total = 0, 0
+# 📌 Ensemble methods
+def majority_voting(predictions):
+    """Majority vote among models."""
+    preds = np.array(predictions)
+    final_preds = np.round(preds.mean(axis=0))  # Majority Voting
+    return final_preds
 
+def average_ensemble(predictions):
+    """Averaging the softmax probabilities."""
+    preds = np.array(predictions)
+    return preds.mean(axis=0)  # Average of probabilities
+
+def max_probability(predictions):
+    """Select the class with the highest probability sum."""
+    preds = np.array(predictions)
+    return np.argmax(preds.sum(axis=0), axis=1)  # Highest summed probability
+
+# 📌 Function to evaluate ensemble
+def ensemble_predict(model_paths, test_dir, method="majority"):
+    print(f"\n🔹 Evaluating ensemble using method: {method}")
+    models = load_models(model_paths, device)
+
+    # 📌 Define test transformations
+    test_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    # 📌 Load dataset
+    test_dataset = CustomDataset(test_dir, transform=test_transform)
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+    all_predictions = []
+    all_targets = []
+
+    # 📌 Iterate over test set
     with torch.no_grad():
-        for inputs, labels in test_loader:
-            inputs, labels = inputs.to(device), labels.to(device)
+        for inputs, targets in test_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            all_targets.extend(targets.cpu().numpy())
 
-            # Collect outputs from all models
-            outputs_list = [torch.sigmoid(model(inputs)) for model in models]  # Sigmoid for binary classification
+            predictions = []
+            for model in models:
+                outputs = model(inputs)
+                probs = torch.sigmoid(outputs)  # Sigmoid for binary classification
+                predictions.append(probs.cpu().numpy())
 
+            # 📌 Apply ensemble method
             if method == "majority":
-                # Majority voting
-                preds_list = [(outputs > 0.5).long() for outputs in outputs_list]
-                stacked_preds = torch.stack(preds_list, dim=0)  # Shape: (num_models, batch_size, 1)
-                majority_preds = torch.mode(stacked_preds, dim=0).values.squeeze(1)
-                final_preds = majority_preds
-
+                final_preds = majority_voting(predictions)
             elif method == "average":
-                # Averaging probabilities
-                avg_probs = torch.mean(torch.stack(outputs_list, dim=0), dim=0)  # Shape: (batch_size, 1)
-                final_preds = (avg_probs > 0.5).long()
-
-            elif method == "highest":
-                # Highest overall probability
-                max_probs, _ = torch.max(torch.stack(outputs_list, dim=0), dim=0)  # Shape: (batch_size, 1)
-                final_preds = (max_probs > 0.5).long()
-
+                final_preds = average_ensemble(predictions)
+            elif method == "max_prob":
+                final_preds = max_probability(predictions)
             else:
-                raise ValueError(f"Unknown ensemble method: {method}")
+                raise ValueError("Unknown ensemble method")
 
-            all_preds.extend(final_preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-            correct += (final_preds == labels.unsqueeze(1)).sum().item()
-            total += labels.size(0)
+            all_predictions.extend(final_preds)
 
-    # Compute accuracy
-    accuracy = correct / total
-    print(f"Ensemble ({method}) Accuracy: {accuracy:.4f} ({correct}/{total})")
+    # 📌 Compute accuracy
+    accuracy = np.mean(np.array(all_predictions) == np.array(all_targets))
+    print(f"✅ Ensemble Accuracy ({method}): {accuracy:.4f}")
 
-    return accuracy, all_preds, all_labels
-
-
+# 📌 Run ensemble
 if __name__ == "__main__":
-    test_dir = "/kaggle/input/skinlesionbinary/val/val"  # Path to your test dataset
-
-    # List of trained models
-    model_paths = [
-        "/kaggle/working/Skin-Lesion-Classification/efficientnet_b4_best.pth",
-        "/kaggle/working/Skin-Lesion-Classification/densenet_121_best.pth",
-        "/kaggle/working/Skin-Lesion-Classification/convnext_tiny_best.pth"
-    ]
-
-    # Choose ensemble method
-    for method in ["majority", "average", "highest"]:
-        print(f"\n Evaluating ensemble using method: {method}")
-        ensemble_predict(model_paths, test_dir, method=method)
+    test_dir = "/kaggle/input/skin-lesion-test"
+    ensemble_method = "majority"  # Change to "average" or "max_prob" to try different ensembling
+    ensemble_predict(model_paths, test_dir, method=ensemble_method)
