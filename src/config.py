@@ -1,5 +1,5 @@
 # Configuration for Skin Lesion Classification
-
+import torch
 # Dataset paths (update paths to Kaggle dataset structure)
 TRAIN_DIR = "/kaggle/input/skinlesionbinary/train/train"
 VAL_DIR = "/kaggle/input/skinlesionbinary/val/val"
