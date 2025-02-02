@@ -3,7 +3,7 @@ import copy
 import os
 from tqdm import tqdm
 from src.utils import early_stopping, plot_metrics  
-from IPython.display import display, FileLink  # ✅ Added for generating download links
+from IPython.display import display, FileLink
 
 def train_model(
     model, model_name, train_loader, val_loader, optimizer, criterion, 
@@ -17,7 +17,7 @@ def train_model(
     best_val_acc, counter, start_epoch = 0.0, 0, 0
     train_losses, val_losses, train_accuracies, val_accuracies = [], [], [], []
 
-    # Resume from the best checkpoint if available
+    # ✅ Resume from checkpoint if available
     if resume and os.path.exists(best_model_path):
         checkpoint = torch.load(best_model_path)
         model.load_state_dict(checkpoint["model_state_dict"])
@@ -26,7 +26,7 @@ def train_model(
         best_val_acc = checkpoint["best_val_acc"]
         start_epoch = checkpoint["epoch"] + 1
         counter = checkpoint["counter"]
-        print(f"🔄 Resuming training from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
+        print(f"🔄 Resuming from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
 
     best_model_wts = copy.deepcopy(model.state_dict())
 
@@ -77,9 +77,11 @@ def train_model(
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
-        # ✅ Update best model correctly BEFORE calling early stopping
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc  # ✅ Update before calling early stopping
+        # ✅ Call early stopping BEFORE updating best_val_acc
+        best_val_acc, counter, stop_training, improved = early_stopping(val_acc, best_val_acc, counter, patience, mode="max")
+
+        # ✅ Save the best model only if improved
+        if improved:
             best_model_wts = copy.deepcopy(model.state_dict())
             checkpoint = {
                 "epoch": epoch,
@@ -92,12 +94,9 @@ def train_model(
             torch.save(checkpoint, best_model_path)
             print(f"✅ Best model updated! Saved to {best_model_path}")
 
-        # 🔹 Call early stopping AFTER updating best_val_acc
-        best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience, mode="max")
-
         if stop_training:
             print("⛔ Early stopping triggered!")
-            break  # ✅ Now stops at the correct time
+            break  # ✅ Stops at the correct time
 
     # ✅ Save final model
     model.load_state_dict(best_model_wts)
@@ -114,4 +113,5 @@ def train_model(
     display(FileLink(final_model_path))
 
     return model
+
 
