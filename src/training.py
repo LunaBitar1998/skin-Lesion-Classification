@@ -2,17 +2,24 @@ import torch
 import copy
 import os
 from tqdm import tqdm
-from src.early_stopping import early_stopping  
+from src.utils import early_stopping, plot_metrics  
+from src.optimizers import get_optimizer, get_loss_function  # ✅ Import optimizer & loss function
 
 def train_model(
-    model, model_name, train_loader, val_loader, criterion, optimizer, 
-    scheduler=None, num_epochs=30, patience=5, device="cuda", resume=False
+    model, model_name, train_loader, val_loader, optimizer_name="adam",
+    loss_name="bce", scheduler=None, num_epochs=30, patience=5, device="cuda", resume=False
 ):
     best_model_path = f"{model_name}_best.pth"
     final_model_path = f"{model_name}_final.pth"
     
     model = model.to(device)
+    optimizer = get_optimizer(model, optimizer_name)  # ✅ Define optimizer
+    criterion = get_loss_function(loss_name)  # ✅ Define loss function
+
     best_val_acc, counter, start_epoch = 0.0, 0, 0
+
+    # Track losses and accuracies
+    train_losses, val_losses, train_accuracies, val_accuracies = [], [], [], []
 
     # Resume from the best checkpoint if available
     if resume and os.path.exists(best_model_path):
@@ -48,6 +55,8 @@ def train_model(
 
         train_loss /= total_train
         train_acc = correct_train / total_train
+        train_losses.append(train_loss)
+        train_accuracies.append(train_acc)
 
         model.eval()
         val_loss, correct_val, total_val = 0.0, 0, 0
@@ -64,6 +73,8 @@ def train_model(
 
         val_loss /= total_val
         val_acc = correct_val / total_val
+        val_losses.append(val_loss)
+        val_accuracies.append(val_acc)
 
         print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
 
@@ -94,4 +105,10 @@ def train_model(
     torch.save(model.state_dict(), final_model_path)
     print(f"Training complete. Final best model saved to {final_model_path}")
 
+    # 🔹 Plot training metrics
+    metrics_path = f"{model_name}_metrics.png"
+    plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, metrics_path)
+    print(f"Training metrics saved to {metrics_path}")
+
     return model
+
