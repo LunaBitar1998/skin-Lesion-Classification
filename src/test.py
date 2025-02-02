@@ -8,15 +8,6 @@ import config
 import sys
 import os
 
-# ✅ Get the absolute path of the repo
-
-#repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-#sys.path.append(repo_path + "/src")  # ✅ Ensure src/ is in Python's path
-
-# ✅ Import modules now
-#from transforms import get_val_transform
-#from models import initialize_model
-#import config
 
 def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
     """Evaluate a trained model on a separate test set."""
