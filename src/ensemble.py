@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from models import initialize_model  
 from transforms import get_val_transform  
-
+from config import DROPOUT, BATCH_SIZE
 
 # 📌 Define device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -31,7 +31,7 @@ def load_models(model_paths, device):
             raise ValueError(f"Unknown model in {model_path}")
 
         # ✅ Initialize model correctly with config dropout
-        model = initialize_model(model_name, config.DROPOUT)  
+        model = initialize_model(model_name, DROPOUT)  
 
         # ✅ Load weights correctly
         checkpoint = torch.load(model_path, map_location=device)
@@ -56,7 +56,7 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
 
     # 📌 Load dataset
     test_dataset = datasets.ImageFolder(test_dir, transform=test_transform)
-    test_loader = DataLoader(test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     all_predictions = []
     all_targets = []
