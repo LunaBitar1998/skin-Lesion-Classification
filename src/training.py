@@ -14,7 +14,7 @@ def train_model(
     model = model.to(device)
     best_val_acc, counter, start_epoch = 0.0, 0, 0
 
-    # 🔹 Resume from the best checkpoint if available
+    # Resume from the best checkpoint if available
     if resume and os.path.exists(best_model_path):
         checkpoint = torch.load(best_model_path)
         model.load_state_dict(checkpoint["model_state_dict"])
