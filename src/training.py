@@ -4,12 +4,15 @@ from tqdm import tqdm
 from src.early_stopping import early_stopping  
 
 def train_model(
-    model, train_loader, val_loader, criterion, optimizer, 
+    model, model_name, train_loader, val_loader, criterion, optimizer, 
     scheduler=None, num_epochs=30, patience=5, device="cuda"
 ):
     model = model.to(device)
     best_model_wts = copy.deepcopy(model.state_dict())
     best_val_acc, counter = 0.0, 0
+
+    best_model_path = f"{model_name}_best.pth"  # Save best model using model name
+    final_model_path = f"{model_name}_final.pth"  # Save final model
 
     for epoch in range(num_epochs):
         print(f"\nEpoch {epoch + 1}/{num_epochs}")
@@ -56,16 +59,21 @@ def train_model(
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
+        # Save the best model with model-specific name
         if val_acc > best_val_acc:
             best_val_acc = val_acc
             best_model_wts = copy.deepcopy(model.state_dict())
-            print("Best model updated!")
+            torch.save(best_model_wts, best_model_path)
+            print(f"Best model updated! Saved to {best_model_path}")
 
         best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience)
         if stop_training:
             print("Early stopping triggered!")
             break
 
+    # Load best model weights & save final best model
     model.load_state_dict(best_model_wts)
-    print("Training complete.")
+    torch.save(model.state_dict(), final_model_path)
+    print(f"Training complete. Final best model saved to {final_model_path}")
+
     return model
