@@ -4,7 +4,7 @@ import os
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from models import initialize_model  
-from utils import get_val_transform  
+from transforms import get_val_transform  
 
 
 # 📌 Define device
