@@ -5,9 +5,9 @@ TRAIN_DIR = "/kaggle/input/skinlesionbinary/train/train"
 VAL_DIR = "/kaggle/input/skinlesionbinary/val/val"
 
 # Training parameters
-MODEL_NAME = "resnet101"          # Change to "efficientnet_b0", etc., as needed
+MODEL_NAME = "efficientnet_b0"          # Change to "efficientnet_b0", etc., as needed
 IMG_SIZE = 224                   # Image size for resizing
-BATCH_SIZE = 64                  # Batch size
+BATCH_SIZE =32                # Batch size
 NUM_EPOCHS = 30                  # Number of training epochs
 LEARNING_RATE = 1e-4             # Learning rate
 WEIGHT_DECAY = 1e-4              # Weight decay for regularization
