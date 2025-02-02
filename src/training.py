@@ -26,12 +26,12 @@ def train_model(
         best_val_acc = checkpoint["best_val_acc"]
         start_epoch = checkpoint["epoch"] + 1
         counter = checkpoint["counter"]
-        print(f"Resuming training from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
+        print(f"🔄 Resuming training from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
 
     best_model_wts = copy.deepcopy(model.state_dict())
 
     for epoch in range(start_epoch, num_epochs):
-        print(f"\nEpoch {epoch + 1}/{num_epochs}")
+        print(f"\n📢 Epoch {epoch + 1}/{num_epochs}")
 
         model.train()
         train_loss, correct_train, total_train = 0.0, 0, 0
@@ -72,43 +72,46 @@ def train_model(
         val_losses.append(val_loss)
         val_accuracies.append(val_acc)
 
-        print(f"Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
+        print(f"🎯 Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f} | Val Loss: {val_loss:.4f}, Val Acc: {val_acc:.4f}")
 
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
-        # 🔹 Call early stopping FIRST, before updating best_val_acc
-        best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience, mode="max")
-
-        if val_acc > best_val_acc:  # ✅ Only update AFTER early stopping check
+        # ✅ Update best model correctly BEFORE calling early stopping
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc  # ✅ Update before calling early stopping
             best_model_wts = copy.deepcopy(model.state_dict())
             checkpoint = {
                 "epoch": epoch,
                 "model_state_dict": best_model_wts,
                 "optimizer_state_dict": optimizer.state_dict(),
                 "scheduler_state_dict": scheduler.state_dict() if scheduler else None,
-                "best_val_acc": best_val_acc,  # ✅ Now updates after early stopping check
+                "best_val_acc": best_val_acc,
                 "counter": counter
             }
             torch.save(checkpoint, best_model_path)
-            print(f"Best model updated! Saved to {best_model_path}")
+            print(f"✅ Best model updated! Saved to {best_model_path}")
+
+        # 🔹 Call early stopping AFTER updating best_val_acc
+        best_val_acc, counter, stop_training = early_stopping(val_acc, best_val_acc, counter, patience, mode="max")
 
         if stop_training:
-            print("Early stopping triggered!")
-            break  # ✅ Now breaks at the right time
+            print("⛔ Early stopping triggered!")
+            break  # ✅ Now stops at the correct time
 
+    # ✅ Save final model
     model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), final_model_path)
-    print(f"Training complete. Final best model saved to {final_model_path}")
+    print(f"✅ Training complete. Final best model saved to {final_model_path}")
 
-    # Plot training metrics
+    # ✅ Plot training metrics
     metrics_path = f"{model_name}_metrics.png"
     plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, metrics_path)
-    print(f"Training metrics saved to {metrics_path}")
+    print(f"📊 Training metrics saved to {metrics_path}")
 
     # ✅ Add a download link for the final saved model
-    print(f"Generating download link for final model: {final_model_path}")
-    display(FileLink(final_model_path))  # Generate a clickable download link
+    print(f"🔗 Generating download link for final model: {final_model_path}")
+    display(FileLink(final_model_path))
 
     return model
 
