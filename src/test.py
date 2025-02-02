@@ -57,4 +57,4 @@ def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
 
 if __name__ == "__main__":
     test_dir = "/kaggle/input/skinlesionbinary/val/val"  #here you should put your test set path 
-    evaluate_model(model_name=config.MODEL_NAME, test_dir=test_dir)
+    evaluate_model(model_name=config.MODEL_NAME,DROPOUT, test_dir=test_dir)
