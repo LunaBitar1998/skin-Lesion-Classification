@@ -2,9 +2,7 @@ import torch
 from torchvision import datasets
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
-from src.transforms import get_val_transform
-from src.models import initialize_model
-import src.config as config
+
 import sys
 import os
 
