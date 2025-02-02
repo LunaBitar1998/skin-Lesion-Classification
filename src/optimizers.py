@@ -1,18 +1,7 @@
 import torch
 
 def get_optimizer(model, optimizer_name="adam", lr=1e-4, weight_decay=1e-4):
-    """
-    Returns the optimizer for training.
-
-    Args:
-        model (nn.Module): The model whose parameters will be optimized.
-        optimizer_name (str): The type of optimizer ("adam", "sgd").
-        lr (float): Learning rate.
-        weight_decay (float): Weight decay for regularization.
-
-    Returns:
-        torch.optim.Optimizer: Optimizer instance.
-    """
+  
     if optimizer_name.lower() == "adam":
         return torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     elif optimizer_name.lower() == "sgd":
