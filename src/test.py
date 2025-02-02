@@ -1,25 +1,13 @@
-import torch
-from torchvision import datasets
-from torch.utils.data import DataLoader
-import torch.nn.functional as F
-from transforms import get_val_transform
-from models import initialize_model
-import config
-import sys
-import os
-
-
-def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
+def evaluate_model(model_name, dropout, test_dir, batch_size=32, device="cuda"):
     """Evaluate a trained model on a separate test set."""
     
-    # Load the best model
+    # Load the model
     model = initialize_model(model_name, dropout)
     model_path = f"/kaggle/working/Skin-Lesion-Classification/{model_name}_best.pth"  # Use the best model
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    checkpoint = torch.load(model_path, map_location=device)  # Load the checkpoint
+    model.load_state_dict(checkpoint["model_state_dict"])  # Extract model weights
     model.to(device)
     model.eval()
-
-
 
     # Prepare test dataset
     test_transform = get_val_transform(config.IMG_SIZE)
@@ -47,6 +35,7 @@ def evaluate_model(model_name,dropout, test_dir, batch_size=32, device="cuda"):
     print(f"Test Accuracy: {accuracy:.4f} ({correct}/{total})")
 
     return all_preds, all_labels, accuracy
+
 
 if __name__ == "__main__":
     test_dir = "/kaggle/input/skinlesionbinary/val/val"  #here you should put your test set path 
