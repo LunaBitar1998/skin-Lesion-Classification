@@ -4,7 +4,7 @@ from torchvision import datasets
 from src.transforms import get_train_transform, get_val_transform
 
 
-def get_data_loaders(train_dir, val_dir, img_size=224, batch_size=64, num_workers=0):
+def get_data_loaders(train_dir, val_dir, img_size=224, batch_size=32, num_workers=4):
     # Define transforms
     train_transform = get_train_transform(size=img_size)
     val_transform = get_val_transform(size=img_size)
