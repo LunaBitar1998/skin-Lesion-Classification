@@ -10,15 +10,7 @@ def get_optimizer(model, optimizer_name="adam", lr=1e-4, weight_decay=1e-4):
         raise ValueError(f"Unknown optimizer: {optimizer_name}")
 
 def get_loss_function(loss_name="bce"):
-    """
-    Returns the loss function for training.
 
-    Args:
-        loss_name (str): The type of loss function ("bce", "cross_entropy", "mse").
-
-    Returns:
-        torch.nn.Module: Loss function instance.
-    """
     if loss_name.lower() == "bce":
         return torch.nn.BCEWithLogitsLoss()
     elif loss_name.lower() == "cross_entropy":
