@@ -20,20 +20,19 @@ Additional combinations of models and hyperparameters will be tested to further 
 The ensemble method implemented in this framework is expected to boost overall accuracy.
 Metrics such as precision, recall, and F1-score will also be evaluated for a more comprehensive performance analysis.
 
-## Project Structure
-
-
-├── src/
-│   ├── config.py         
-│   ├── data_loader.py 
-│   ├── ensemble.py       
-│   ├── models.py         
-│   ├── optimizers.py    
-│   ├── test.py           
-│   ├── training.py       
-│   ├── transforms.py  
-│   ├── utils.py         
-├── README.md          
-├── main.py               
-├── requirements.txt      
+### Project Structure
+```text
+src/
+├── config.py         # Contains configuration settings for models, hyperparameters, etc.
+├── data_loader.py    # Handles dataset loading and preprocessing.
+├── ensemble.py       # Code for ensembling multiple models.
+├── models.py         # Model initialization logic for different architectures.
+├── optimizers.py     # Defines optimizers and learning rate schedulers.
+├── test.py           # Evaluation and testing logic.
+├── training.py       # Training loop for models.
+├── transforms.py     # Data augmentation and preprocessing functions.
+├── utils.py          # Utility functions for logging, metrics, etc.
+README.md             # Project documentation.
+main.py               # Entry point for training and evaluation.
+requirements.txt      # Required libraries for the project.
 
