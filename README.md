@@ -6,23 +6,23 @@ The dataset used for this project includes dermoscopic images from three widely 
 
 Training Dataset: 15,195 images
 Validation Dataset: 3,796 images
-##Purpose of the Repository
+## Purpose of the Repository
 The main purpose of this repository is to streamline the process of training deep learning models for binary classification of dermoscopic images. The modular structure allows users to:
 
 1. Experiment with Different Models: Users can easily switch between models such as ConvNeXt, EfficientNet, DenseNet, etc., by simply changing the model name in the configuration file.
 2. Test Various Hyperparameters: Loss functions, optimizers, dropout rates, and other hyperparameters can be adjusted without modifying the core training code.
 3. Ensemble Multiple Models: The framework includes functionality for ensemble predictions, allowing users to boost performance by combining the outputs of different models.
 4. Facilitate Future Research: By making the training and testing process easier to configure, this framework encourages further experimentation to identify the best-performing model and hyperparameter combinations.
-##Achieved Results
+## Achieved Results
 Baseline Model: The ConvNeXt-Tiny model achieved an accuracy of 90% on the validation set.
 Future Work:
 Additional combinations of models and hyperparameters will be tested to further improve performance.
 The ensemble method implemented in this framework is expected to boost overall accuracy.
 Metrics such as precision, recall, and F1-score will also be evaluated for a more comprehensive performance analysis.
 
-Project Structure
+## Project Structure
 
-Edit
+
 ├── src/
 │   ├── config.py         # Contains configuration settings for models, hyperparameters, etc.
 │   ├── data_loader.py    # Handles dataset loading and preprocessing.
