@@ -23,7 +23,7 @@ Metrics such as precision, recall, and F1-score will also be evaluated for a mor
 ## Project Structure
 
 
-├── src/
+""" ├── src/
 │   ├── config.py         # Contains configuration settings for models, hyperparameters, etc.
 │   ├── data_loader.py    # Handles dataset loading and preprocessing.
 │   ├── ensemble.py       # Code for ensembling multiple models.
@@ -35,4 +35,5 @@ Metrics such as precision, recall, and F1-score will also be evaluated for a mor
 │   ├── utils.py          # Utility functions for logging, metrics, etc.
 ├── README.md             # Project documentation.
 ├── main.py               # Entry point for training and evaluation.
-├── requirements.txt      # Required libraries for the project.
+├── requirements.txt      # Required libraries for the project. """
+
