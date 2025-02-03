@@ -23,7 +23,7 @@ Metrics such as precision, recall, and F1-score will also be evaluated for a mor
 ## Project Structure
 
 
- ├── src/
+├── src/
 │   ├── config.py         
 │   ├── data_loader.py 
 │   ├── ensemble.py       
