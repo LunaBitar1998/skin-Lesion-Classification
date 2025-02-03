@@ -14,8 +14,7 @@ def set_seed(seed=42):
     torch.backends.cudnn.benchmark = False
 
 #  Check if all four corners are dark
-def are_corners_dark(img, threshold=100):
-    """Return True if all four corners of the image are dark."""
+def are_corners_dark(img, threshold=100):    
     h, w, _ = img.shape
     corners = [
         img[:3, :3], img[:3, w-3:],  # Top-left, Top-right
@@ -27,7 +26,7 @@ def are_corners_dark(img, threshold=100):
 def crop_and_resize(img, size, threshold=100):
     img = np.array(img)
     while are_corners_dark(img, threshold) and min(img.shape[:2]) > 5:
-        img = img[2:-2, 2:-2]  # Crop 2 pixels from all sides
+        img = img[2:-2, 2:-2] 
     img = Image.fromarray(img)
     img = transforms.CenterCrop(min(img.size))(img)  # Center crop to square
     return transforms.Resize((size, size))(img)  # Resize to target size
