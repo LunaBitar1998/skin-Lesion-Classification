@@ -6,6 +6,12 @@ The dataset used for this project includes dermoscopic images from three widely 
 
 Training Dataset: 15,195 images
 Validation Dataset: 3,796 images
+
+
+
+
+
+
 ## Purpose of the Repository
 The main purpose of this repository is to streamline the process of training deep learning models for binary classification of dermoscopic images. The modular structure allows users to:
 
@@ -20,7 +26,7 @@ Additional combinations of models and hyperparameters will be tested to further 
 The ensemble method implemented in this framework is expected to boost overall accuracy.
 Metrics such as precision, recall, and F1-score will also be evaluated for a more comprehensive performance analysis.
 
-### Project Structure
+## Project Structure
 ```text
 src/
 ├── config.py         # Contains configuration settings for models, hyperparameters, etc.
