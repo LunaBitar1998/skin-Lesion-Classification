@@ -7,27 +7,24 @@ from models import initialize_model
 from transforms import get_val_transform  
 from config import DROPOUT, BATCH_SIZE, IMG_SIZE
 
-# 📌 Define device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# 📌 Model paths
 model_paths = [
     "/kaggle/working/Skin-Lesion-Classification/efficientnet_b4_best.pth",
     "/kaggle/working/Skin-Lesion-Classification/densenet_121_best.pth",
     "/kaggle/working/Skin-Lesion-Classification/convnext_tiny_best.pth"
-]
+]  #should be changed depending on your trained models and their paths 
 
-# 📌 Load all models correctly
 def load_models(model_paths, device):
     models = []
     for model_path in model_paths:
-        # ✅ Extract model name dynamically
+        # Extract model name dynamically
         model_name = os.path.basename(model_path).replace("_best.pth", "")
 
-        # ✅ Initialize model correctly with config dropout
+        # Initialize model with config dropout
         model = initialize_model(model_name, DROPOUT)  
 
-        # ✅ Load weights correctly
+        # Load weights 
         checkpoint = torch.load(model_path, map_location=device)
         if "model_state_dict" in checkpoint:  
             model.load_state_dict(checkpoint["model_state_dict"], strict=False)
@@ -40,22 +37,21 @@ def load_models(model_paths, device):
 
     return models
 
-# 📌 Function to evaluate ensemble
+# Function to perform the ensemble
 def ensemble_predict(model_paths, test_dir, method="majority"):
-    print(f"\n🔹 Evaluating ensemble using method: {method}")
+    print(f"\n Evaluating ensemble using method: {method}")
     models = load_models(model_paths, device)
 
-    # ✅ Keep using validation transform
     test_transform = get_val_transform(IMG_SIZE)  
 
-    # 📌 Load dataset
+    # Load dataset
     test_dataset = datasets.ImageFolder(test_dir, transform=test_transform)
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     all_predictions = []
     all_targets = []
 
-    # 📌 Iterate over test set
+    #  Iterate over test set
     with torch.no_grad():
         for inputs, targets in test_loader:
             inputs, targets = inputs.to(device), targets.to(device)
@@ -67,8 +63,8 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
                 probs = torch.sigmoid(outputs)  
                 predictions.append(probs.cpu().numpy())
 
-            # 📌 Apply ensemble method
-            predictions = np.array(predictions)  # Convert list to numpy array
+            # Apply ensemble method
+            predictions = np.array(predictions)  
             if method == "majority":
                 # Majority Voting (Hard Voting) - Count votes for 0 vs 1
                 votes = np.round(predictions)  # Convert probabilities to hard labels (0 or 1)
@@ -87,12 +83,12 @@ def ensemble_predict(model_paths, test_dir, method="majority"):
 
             all_predictions.extend(final_preds.flatten())  # Flatten to match targets
 
-    # 📌 Compute accuracy
+    # Compute accuracy
     accuracy = np.mean(np.array(all_predictions) == np.array(all_targets))
-    print(f"✅ Ensemble Accuracy ({method}): {accuracy:.4f}")
+    print(f" Ensemble Accuracy ({method}): {accuracy:.4f}")
 
-# 📌 Run ensemble
+#  Run ensemble
 if __name__ == "__main__":
-    test_dir = "/kaggle/input/skinlesionbinary/val/val"  # ✅ Correct test dataset path
-    ensemble_method = "max_prob"  # Change to "average" or "max_prob" if needed
+    test_dir = "/kaggle/input/skinlesionbinary/val/val"  
+    ensemble_method = "max_prob"  
     ensemble_predict(model_paths, test_dir, method=ensemble_method)
