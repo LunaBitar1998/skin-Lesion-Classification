@@ -1,27 +1,14 @@
 def early_stopping(val_metric, best_metric, counter, patience, mode="max", min_delta=0.001):
-    """
-    Early stopping function to monitor training performance.
-    
-    Args:
-        val_metric (float): Current metric value (e.g., validation accuracy).
-        best_metric (float): Best metric value so far.
-        counter (int): Counter for epochs without improvement.
-        patience (int): Number of epochs to wait before stopping.
-        mode (str): "max" for accuracy, "min" for loss.
-        min_delta (float): Minimum improvement to reset patience counter.
 
-    Returns:
-        tuple: (updated_best_metric, updated_counter, stop_training)
-    """
-    improved = False  # ✅ Track if an improvement happened
+    improved = False  # Track if an improvement happened
 
     if mode == "max":
         if val_metric > best_metric + min_delta:
             best_metric = val_metric
-            counter = 0  # ✅ Reset patience counter
+            counter = 0  #  Reset patience counter
             improved = True
         else:
-            counter += 1  # ✅ Increase patience counter
+            counter += 1  #  Increase patience counter
     elif mode == "min":
         if val_metric < best_metric - min_delta:
             best_metric = val_metric
@@ -30,8 +17,8 @@ def early_stopping(val_metric, best_metric, counter, patience, mode="max", min_d
         else:
             counter += 1
 
-    stop_training = counter >= patience  # ✅ Stop only if patience limit is reached
-    return best_metric, counter, stop_training, improved  # ✅ Also return `improved`
+    stop_training = counter >= patience  #  Stop only if patience limit is reached
+    return best_metric, counter, stop_training, improved 
 
 import matplotlib.pyplot as plt
 
