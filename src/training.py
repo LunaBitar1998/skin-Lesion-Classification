@@ -108,9 +108,6 @@ def train_model(
     plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, metrics_path)
     print(f" Training metrics saved to {metrics_path}")
 
-    #  Add a download link for the final saved model
-    print(f" Generating download link for final model: {final_model_path}")
-    display(FileLink(final_model_path))
 
     return model
 
