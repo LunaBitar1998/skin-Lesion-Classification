@@ -17,7 +17,7 @@ def train_model(
     best_val_acc, counter, start_epoch = 0.0, 0, 0
     train_losses, val_losses, train_accuracies, val_accuracies = [], [], [], []
 
-    # ✅ Resume from checkpoint if available
+    # Resume from checkpoint if available
     if resume and os.path.exists(best_model_path):
         checkpoint = torch.load(best_model_path)
         model.load_state_dict(checkpoint["model_state_dict"])
@@ -26,12 +26,12 @@ def train_model(
         best_val_acc = checkpoint["best_val_acc"]
         start_epoch = checkpoint["epoch"] + 1
         counter = checkpoint["counter"]
-        print(f"🔄 Resuming from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
+        print(f" Resuming from epoch {start_epoch}, best val accuracy: {best_val_acc:.4f}")
 
     best_model_wts = copy.deepcopy(model.state_dict())
 
     for epoch in range(start_epoch, num_epochs):
-        print(f"\n📢 Epoch {epoch + 1}/{num_epochs}")
+        print(f"\n Epoch {epoch + 1}/{num_epochs}")
 
         model.train()
         train_loss, correct_train, total_train = 0.0, 0, 0
@@ -77,10 +77,10 @@ def train_model(
         if scheduler:
             scheduler.step(val_acc) if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau) else scheduler.step()
 
-        # ✅ Call early stopping BEFORE updating best_val_acc
+        # Call early stopping
         best_val_acc, counter, stop_training, improved = early_stopping(val_acc, best_val_acc, counter, patience, mode="max")
 
-        # ✅ Save the best model only if improved
+        # Save the best model only if improved
         if improved:
             best_model_wts = copy.deepcopy(model.state_dict())
             checkpoint = {
@@ -92,24 +92,24 @@ def train_model(
                 "counter": counter
             }
             torch.save(checkpoint, best_model_path)
-            print(f"✅ Best model updated! Saved to {best_model_path}")
+            print(f" Best model updated! Saved to {best_model_path}")
 
         if stop_training:
-            print("⛔ Early stopping triggered!")
-            break  # ✅ Stops at the correct time
+            print(" Early stopping triggered!")
+            break  
 
-    # ✅ Save final model
+    #  Save final model
     model.load_state_dict(best_model_wts)
     torch.save(model.state_dict(), final_model_path)
-    print(f"✅ Training complete. Final best model saved to {final_model_path}")
+    print(f" Training complete. Final best model saved to {final_model_path}")
 
-    # ✅ Plot training metrics
+    #  Plot training metrics
     metrics_path = f"{model_name}_metrics.png"
     plot_metrics(train_losses, val_losses, train_accuracies, val_accuracies, metrics_path)
-    print(f"📊 Training metrics saved to {metrics_path}")
+    print(f" Training metrics saved to {metrics_path}")
 
-    # ✅ Add a download link for the final saved model
-    print(f"🔗 Generating download link for final model: {final_model_path}")
+    #  Add a download link for the final saved model
+    print(f" Generating download link for final model: {final_model_path}")
     display(FileLink(final_model_path))
 
     return model
